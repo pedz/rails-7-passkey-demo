@@ -1,0 +1,2 @@
+path=( /root/bin ${(@)path:#/root/bin} )
+path=( /rails-7-passkey-demo/bin ${(@)path:#/rails-7-passkey-demo/bin} )

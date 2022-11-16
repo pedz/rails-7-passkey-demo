@@ -1,0 +1,83 @@
+
+* Steps to create a ruby image that has ri/rdoc enabled
+
+This is what I did to create =pedzsan/ruby-with-rdoc:3.1.2-bullseye=
+on Docker hub.  This image is used in my project because I want to use
+Yari within Emacs and get the rdoc specific to the application I'm
+working on.
+
+  1. Find the official Dockerfile for the Ruby version that you want
+     to create.  For example, in the above case, I started with [[https://github.com/docker-library/ruby/blob/6a100006eeb52ec06bfe3f318b401cdf5a52dd6b/3.1/bullseye/Dockerfile][this]]
+     one.  Somehow get a local copy of it.  I named it
+     =Dockerfile.ruby= and that is what I'll call it in the
+     instructions below.
+
+  2. At this time, there are two pieces that need to be removed from
+     =Dockerfile.ruby=.
+
+     1. Around line 9 with the comment =# skip installing gem
+        documentation=.  Just comment out or remove the ~RUN~ command
+        that creates the gemrc file.
+
+     2. Around line 58, remove ~--disable-install-doc \~
+
+  3. Then execute the ~./create-ruby.sh~ in this directory passing it
+     the path to the file.  This will create the image, tag it
+     properly, and push it to the repo based upon values in the env.sh
+     file.
+
+* Steps to create a project
+
+These first steps come from [[https://docs.docker.com/compose/rails][Quickstart: Compose and Rails]] tutorial
+about how to use docker compose on a Ruby on Rails project.
+
+  1. Create a directory with your project's name
+     ("rails-7-passkey-demo" in this case) and put the contents of
+     this directory in a sub-directory named "docker".
+
+  2. Review the settings in env.sh.  They should just work but you can
+     verify this by doing ~( source docker/env.sh; echo
+     $COMPOSE_PROJECT_NAME )~ or similar commands.
+     
+  3. Run ~./docker/first-build.sh~.  This now does a lot of steps and
+     finishes with ~docker compose up~.  Rather than document what it
+     does here, just look in that file for what it does and why.
+
+  4. From another window, create the database:
+
+     #+BEGIN_SRC sh
+       ./docker/compose-exec.sh web bin/rails db:create
+     #+END_SRC
+
+  5. Connect to the app (port 3000 is the default.  See env.sh to
+     change it)
+
+     #+BEGIN_SRC sh
+       open http://localhost:3000
+     #+END_SRC
+        
+* Docker Compose Commands
+
+Because of how I have things set up, I've written some simple scripts
+to do everyday tasks.  Here is a list of them:
+
+- attach-zsh.sh     :: Takes one argument, web or db, and execs zsh in
+  that container.
+- bundle-install.sh :: Run ~bundle install~ inside the web container.
+  The way I have things set up now, I'm not sure this is needed any
+  more.
+- compose-build.sh  :: Takes no arguments and does a ~docker compose
+  build~.
+- compose-exec.sh   :: Does ~docker compose exec~ with whatever
+  arguments appended to the end.  e.g. Step 3 of [[Steps to create a
+  project]].
+- compose-run.sh    :: Same as ~compose-exec.sh~ but does ~docker
+  compose run~
+- compose-up.sh     :: Takes no arguments and does ~docker compose
+  up~.
+- create-ruby.sh    :: See [[Steps to create a ruby image that has
+  ri/rdoc enabled]]
+- first-build.sh    :: See Step 1 of [[Steps to create a project]].
+
+Note that these are in the docker sub-directory.  When in the app's root
+directory, ~docker compose foo~ becomes ~docker/compose-foo.sh~.

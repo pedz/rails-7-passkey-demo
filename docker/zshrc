@@ -1,0 +1,3 @@
+HISTFILE=/rails-7-passkey-demo/.zsh_history
+SAVEHIST=32768
+(( HISTSIZE = SAVEHIST * 2 ))

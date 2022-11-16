@@ -1,0 +1,9 @@
+#+title: Rails Docker Setup
+
+* Introduction
+:LOGBOOK:
+CLOCK: [2022-11-15 Tue 09:31]--[2022-11-15 Tue 10:48] =>  1:17
+:END:
+
+The goal of this repository is to have one command that will create a
+Rails project that uses Docker compose.

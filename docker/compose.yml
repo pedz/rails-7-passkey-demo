@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:${POSTGRES_VERSION}
+    hostname: ${COMPOSE_PROJECT_NAME}-db
+    volumes:
+      - type: volume
+        source: db-data
+        target: /var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+
+      # These come from the environment.  The shell scripts I'm using
+      # source env.sh which define and export all of the Docker and
+      # Compose variables.
+      args:
+        - COMPOSE_PROJECT_NAME
+        - DOCKER_REPOSITORY
+        - DOCKER_SCAN_SUGGEST
+        - PORT
+        - POSTGRES_VERSION
+        - PROJECT_VERSION
+        - RAILS_MAJOR_VERSION
+        - RUBY_IMAGE
+        - RUBY_VERSION
+    hostname: ${COMPOSE_PROJECT_NAME}
+    image: ${DOCKER_REPOSITORY}/${COMPOSE_PROJECT_NAME}:${PROJECT_VERSION}
+    volumes:
+      - .:/${COMPOSE_PROJECT_NAME}
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      - db
+
+volumes:
+  db-data:
+    external: true
+    name: ${COMPOSE_PROJECT_NAME}-db
