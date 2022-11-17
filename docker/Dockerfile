@@ -44,7 +44,7 @@ RUN apt-get update -qq && \
     wget -qO /etc/apt/trusted.gpg.d/ACCC4CF8.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc && \
     echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
     apt-get update -qq && \
-    apt-get install -y "postgresql-client-${POSTGRES_VERSION%.*}" zsh less exuberant-ctags && \
+    apt-get install -y "postgresql-client-${POSTGRES_VERSION%.*}" zsh less && \
     chsh -s /usr/bin/zsh root && \
     gem update bundler
 
@@ -61,6 +61,12 @@ RUN chmod +x /root/.zsh*
 RUN mkdir /root/bin
 RUN bundle config set --global bin /root/bin
 RUN bundle install
+
+# Create all of the rdoc for the installed gems (first line) as well
+# as all of the Rails app code in and below the current directory
+RUN bundle exec gem rdoc --all
+RUN bundle exec rdoc --ri
+RUN /root/bin/yard gems --quiet
 
 # Add a script to be executed every time the container starts.
 COPY docker/entrypoint.sh /usr/bin/
