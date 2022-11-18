@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: credentials
+#
+#  id          :bigint           not null, primary key
+#  user_id     :bigint           not null
+#  external_id :string
+#  nickname    :string
+#  public_key  :string
+#  sign_count  :bigint
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#
 class Credential < ApplicationRecord
   validates :external_id, :public_key, :nickname, :sign_count, presence: true
   validates :external_id, uniqueness: true
