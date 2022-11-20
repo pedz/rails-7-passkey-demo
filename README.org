@@ -88,3 +88,25 @@ suppose to give you completion suggestions, etc.
 It is working slightly but I don't think it will be of any benefit.
 
 I finally got back to mucking with the app itself.
+
+* Working on new registration
+:LOGBOOK:
+CLOCK: [2022-11-18 Fri 08:00]--[2022-11-18 Fri 16:00] =>  8:00
+:END:
+Had a good day and worked on getting the new registration.  I figured
+out how to get the submit of the form to get into the submit method of
+the ~new-registration-controller~.  Figured out that ~-controller~
+needed to be added to the filename.  etc.
+
+* Tangent to understand Webauthn
+:LOGBOOK:
+CLOCK: [2022-11-19 Sat 08:00]--[2022-11-19 Sat 16:00] =>  8:00
+:END:
+I thought I should become more familiar with the finer details of
+[[https://www.w3.org/TR/webauthn/][WebAuthn]] so I spent the day reading.  As usual, I got only to section
+5.1 but I think I have general understanding.  Between the
+[[https://rubygems.org/gems/webauthn/versions/2.5.2][Webauthn Gem]] and [[https://github.com/github/webauthn-json][webauthn-json]], there isn't a lot of need to
+understand the finer details.
+
+In particular, the [[https://github.com/github/webauthn-json#api-browser-ponyfill][ponyfill]] makes it simpler than what the original
+Rails demo did.

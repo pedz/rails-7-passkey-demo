@@ -68,6 +68,14 @@ RUN bundle exec gem rdoc --all
 RUN bundle exec rdoc --ri
 RUN /root/bin/yard gems --quiet
 
+# So I can keep track of my changes to the gems I use more easily.
+RUN ( cd $GEM_HOME/gems && git init . )
+RUN ( cd $GEM_HOME/gems && git config --global init.defaultBranch master )
+RUN ( cd $GEM_HOME/gems && git config --global user.email "pedz@easesoftware.com" )
+RUN ( cd $GEM_HOME/gems && git config --global user.name "Perry Smith" )
+RUN ( cd $GEM_HOME/gems && git add . )
+RUN ( cd $GEM_HOME/gems && git commit -a -m "First Commit" )
+
 # Add a script to be executed every time the container starts.
 COPY docker/entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh

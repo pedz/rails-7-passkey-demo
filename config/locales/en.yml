@@ -30,4 +30,16 @@
 # available at https://guides.rubyonrails.org/i18n.html.
 
 en:
-  hello: "Hello world"
+  registrations:
+    new:
+      heading: "Please register"
+      nickname: "Nickname"
+      username: "User name"
+  helpers:
+    submit:
+      registration:
+        submit: "Register via Passkeys"
+    label:
+      registration:
+        nickname: "Nickname"
+        username: "User name"
