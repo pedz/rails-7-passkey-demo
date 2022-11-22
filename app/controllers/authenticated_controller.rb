@@ -10,6 +10,9 @@ class AuthenticatedController < ApplicationController
   private
 
   def enforce_current_user
-    redirect_to new_session_path if current_user.blank?
+    if current_user.blank?
+      session[:original_uri] = request.env["REQUEST_URI"]
+      redirect_to new_session_path 
+    end
   end
 end
