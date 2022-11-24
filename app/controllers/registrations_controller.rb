@@ -5,24 +5,30 @@ class RegistrationsController < ApplicationController
 
   # POST   /registration(.:format)
   def create
-    user = User.new(username: params[:registration][:username])
+    # A new User is not saved until the callback.  Its webauthn_id is
+    # generated in the model.  session is used to preserve the values
+    # across requests.
+    user = User.find_by(user_args) || User.new(user_args)
 
     create_options = WebAuthn::Credential.options_for_create(
       user: {
         name: params[:registration][:username],
         id: user.webauthn_id
       },
-      authenticator_selection: { user_verification: "required" }
+      authenticator_selection: { user_verification: "required" },
+      exclude: user.credentials.pluck(:external_id)
     )
 
     if user.valid?
       session[:current_registration] = { challenge: create_options.challenge, user_attributes: user.attributes }
 
-      respond_to do |format|
-        format.json {
-          logger.debug { "render json create_options: #{create_options}" }
-          render json: create_options
-        }
+      hash = {
+        callback_url: callback_registration_path(format: :json),
+        create_options: create_options
+      }
+  
+    respond_to do |format|
+        format.json { render json: hash }
       end
     else
       respond_to do |format|
@@ -33,5 +39,11 @@ class RegistrationsController < ApplicationController
 
   # POST   /registration/callback(.:format)
   def callback
+  end
+
+  private
+
+  def user_args
+    { username: params[:registration][:username] }
   end
 end

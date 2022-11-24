@@ -1,5 +1,5 @@
-import * as WebAuthnJSON from "@github/webauthn-json"
-import { showMessage } from "messenger";
+import * as WebAuthnJSON from "@github/webauthn-json/browser-ponyfill"
+// import { showMessage } from "messenger";
 
 function getCSRFToken() {
   var CSRFSelector = document.querySelector('meta[name="csrf-token"]')
@@ -11,6 +11,7 @@ function getCSRFToken() {
 }
 
 function callback(url, body) {
+  console.log("in callback", url);
   fetch(url, {
     method: "POST",
     body: JSON.stringify(body),
@@ -32,10 +33,13 @@ function callback(url, body) {
 }
 
 function create(callbackUrl, credentialOptions) {
-  WebAuthnJSON.create({ "publicKey": credentialOptions }).then(function(credential) {
-    callback(callbackUrl, credential);
+  console.log("create", callbackUrl);
+  const options = WebAuthnJSON.parseCreationOptionsFromJSON({ "publicKey": credentialOptions })
+  console.log("options");
+  WebAuthnJSON.create(options).then((response) => {
+    callback(callbackUrl, response);
   }).catch(function(error) {
-    showMessage(error);
+    console.log("create error", error);
   });
 
   console.log("Creating new public key credential...");

@@ -5,7 +5,6 @@
 #  id          :bigint           not null, primary key
 #  user_id     :bigint           not null
 #  external_id :string
-#  nickname    :string
 #  public_key  :string
 #  sign_count  :bigint
 #  created_at  :datetime         not null

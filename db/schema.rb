@@ -17,7 +17,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_11_16_235156) do
   create_table "credentials", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "external_id"
-    t.string "nickname"
     t.string "public_key"
     t.bigint "sign_count"
     t.datetime "created_at", null: false

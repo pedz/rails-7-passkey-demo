@@ -1,10 +1,6 @@
 #+title: Rails 7 Passkey Demo
 
 * Introduction
-:LOGBOOK:
-CLOCK: [2022-11-14 Mon 08:00]--[2022-11-14 Mon 16:00] =>  8:00
-:END:
-
 All of this code was stolen from various places.  [[https://rubygems.org/gems/webauthn/versions/2.5.2][webauthn]] is a Ruby
 gem which has a Rails 6.0.6 demo: [[https://github.com/cedarcode/webauthn-rails-demo-app][webauthn-rails-demo-app]].
 [[https://github.com/github/webauthn-json][webauthn-json]] is also being used on the browser side.
@@ -27,7 +23,7 @@ relationship to the ~credentials~ table.  The key piece of data is the
 
 An unregistered user will be directed to the ~registration/new~ URL
 where the registration ceremony will result in a new ~credential~
-being created for the user with their public_key and other data.  The
+being created for the user with their ~public_key~ and other data.  The
 final step is a call to ~sign_in(user)~ to store the new session that
 has been created along the way.
 
@@ -41,3 +37,101 @@ is a subclass of ~AuthenticatedController~ which has a ~before_action~
 of ~enforce_current_user~.  Any unauthenticated user is redirected
 to ~session/new~.  The ~session/new~ page has a link to
 ~registration/new~ for unregistered users.
+
+* Changes
+
+~webauthn-rails-demo-app~ had some errors.  See [[file:hours.org::*Tangent to understand Webauthn][Tangent to understand
+Webauthn]].  Here are changes from that project:
+
+- ~RegistrationsController#create~
+  1. An existing user by the same name is found if it exists.  This
+     will allow a user to have more than one method of logging in.
+     For example, they could have a touch-id as well as a Yubikey.
+
+  2. The hash that is sent via JSON contains more than the
+     credentials.  There are no magic values in the Javascript such as
+     the path to the callback function.
+
+  3. The [[https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions][Options for Credential Creation]] is created by
+     ~WebAuthn::Credential#options_for_create~ which returns a
+     ~WebAuthn::PublicKeyCredential::CreationOptions~ instance.  The
+     call to ~options_for_create~ is an options hash that contains the
+     following keys specified in ~snake_case~ and are converted to
+     camelBack via the ~to_json~ method of
+     ~WebAuthn::PublicKeyCredential::CreationOptions~.
+
+     - ~rp~ :: The Relying Party is added in by the ~options_for_create~
+       method by what is specified in
+       ~config/initializers/webauthn.rb~ as documented in
+       [[https://github.com/cedarcode/webauthn-ruby#configuration][webauthn-ruby Configuration]].
+
+     - ~user~ :: This is a hash with the following keys:
+       - ~id~ :: This is a randomized sequence of bytes that should come
+         from ~WebAuthn.generate_user_id~ when the User model is
+         created and preserved in the database.  This is actually what
+         the authentication ceremony looks at.  The ~name~ and
+         ~displayName~ are merely for human consumption.
+
+       - ~name~ :: Generally the "User name"
+         
+       - ~display_name~ :: This is set equal to ~name~ if not explicitly
+         supplied.
+
+     - ~timeout~ :: An optional number specifying the number of
+       milliseconds to wait.
+
+     - ~attestation~ :: An optional attribute that is passed along
+       unchanged.
+
+     - ~authenticator_selection~ :: An optional hash that is passed
+       along unchanged.  It too has ~snake_case~ keys which are
+       converted to camelBack case.  [[https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria][Authenticator Selection Criteria]]
+       has these keys (given in ~snake_case~):
+
+       - ~authenticator_attachment~
+       - ~resident_key~
+       - ~require_resident_key~
+       - ~user_verification~
+
+     - ~exclude_credentials~ :: An optional list (Array) of
+       [[https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor][PublicKeyCredentialDescriptor]]s to exclude from the create
+       processing.
+
+     - ~exclude~ :: An optional more convenient method of creating
+       ~exclude_credentials~.  If ~exclude_credentials~ is not
+       specified, ~exclude~ can be specified as a list of strings and
+       they are converted into tuples with ~id~ being set to the
+       string value and ~type~ being set to "public".
+       
+     - ~pub_key_cred_params~ :: An optional list of hashes with ~type~
+       key which should have a value of "public" and an ~alg~ key
+       which should have a value of an algorithm id such as -7 for the
+       ES256 algorithm.
+
+     - ~algs~ :: An optional and more convenient method for creating the
+       ~pub_key_cred_params~ list.  A list of algorithm names such as
+       "ES256" is given.  Each name is transformed into a hash
+       containing a key of ~type~ with a value of "public" and the
+       corresponding algorithm's id.
+
+  4. The original code had a field for ~nickname~.  ~nickname~ appears
+     four times in the ~WebAuthn~ specification such as [[https://www.w3.org/TR/webauthn/#dom-publickeycredentialentity-name][here]] but it is
+     an algorithmic conversion not something the user inputs.  Thus
+     ~nickname~ was removed from this implementation.
+
+- ~webauthn-json~
+
+  1. This implementation follows ~webauthn-json~'s current
+     recommendation of using [[https://github.com/github/webauthn-json#api-browser-ponyfill][browser ponyfill]].
+
+  2. The original implementation used a Stimulus controller
+     [[https://github.com/cedarcode/webauthn-rails-demo-app/blob/master/app/javascript/controllers/feature_detection_controller.js][feature_detection_controller]] to reveal a ~div~ if the browser
+     could not support passkeys.  The weakness is that if the feature
+     detection completely fails, the ~div~ is not revealed leaving the
+     user unaware that a problem has occurred.
+
+     This implementation hides the ~form~ and shows the error ~div~
+     until the feature detection completes successfully and happily at
+     which point the error ~div~ is hidden and the ~form~ is revealed.
+     (This has not been implemented yet.)
+     

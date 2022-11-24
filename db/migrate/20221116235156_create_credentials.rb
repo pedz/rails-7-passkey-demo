@@ -4,7 +4,6 @@ class CreateCredentials < ActiveRecord::Migration[7.0]
       t.references  :user, null: false, foreign_key: false
       t.foreign_key :users, on_delete: :cascade
       t.string      :external_id
-      t.string      :nickname
       t.string      :public_key
       t.bigint      :sign_count
       t.timestamps

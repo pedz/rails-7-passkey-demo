@@ -63,6 +63,7 @@ group :development do
   gem "annotate", "~> 3.2"
   gem "web-console"
   gem "yard", "~> 0.9.28"
+  gem 'i18n-debug'
 end
 
 group :test do

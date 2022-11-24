@@ -30,13 +30,16 @@ export default class extends Controller {
     function ok(response) {
       response.json().then((data) => {
         console.log("data", data);
-        var credentialOptions = data;
+        const { callback_url, create_options } = data;
+        console.log("callback_url", callback_url);
+        console.log("create_options", create_options);
 
-        if (credentialOptions["user"]) {
-          var credential_nickname = event.target.querySelector("input[name='registration[nickname]']").value;
-          var callback_url = `/registration/callback?credential_nickname=${credential_nickname}`
-
-          Credential.create(encodeURI(callback_url), credentialOptions);
+        if (create_options["user"]) {
+          // var credential_nickname = event.target.querySelector("input[name='registration[nickname]']").value;
+          // var callback_url = `/registration/callback?credential_nickname=${credential_nickname}`
+          const xxx = encodeURI(callback_url);
+          console.log("xxx", xxx)
+          Credential.create(xxx, create_options);
         }
       });
     }

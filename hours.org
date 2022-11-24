@@ -1,46 +1,11 @@
-#+title: Rails 7 Passkey Demo
+#+title: Hours / Blog
 
-* Introduction
+* Start
 :LOGBOOK:
 CLOCK: [2022-11-14 Mon 08:00]--[2022-11-14 Mon 16:00] =>  8:00
 :END:
 
-All of this code was stolen from various places.  [[https://rubygems.org/gems/webauthn/versions/2.5.2][webauthn]] is a Ruby
-gem which has a Rails 6.0.6 demo: [[https://github.com/cedarcode/webauthn-rails-demo-app][webauthn-rails-demo-app]].
-[[https://github.com/github/webauthn-json][webauthn-json]] is also being used on the browser side.
-
-What I've attempted to do is make a demo that uses passkeys and Rails
-7 as stock as possible.  I'm using [[https://github.com/rails/importmap-rails][importmap-rails]] and
-[[https://github.com/rails/tailwindcss-rails][tailwindcss-rails]] (although I don't claim *ANY* ability to design web
-pages.
-
-Also note that I am not good at writing tests.
-
-* Basic Control Flow
-
-There are two basic flows.  One path is for a new unregistered user
-and the other path is for a previously registered user.
-
-The database schema has a ~users~ table which has a ~has_many~
-relationship to the ~credentials~ table.  The key piece of data is the
-~public_key~ kept in the ~credentials~ table.
-
-An unregistered user will be directed to the ~registration/new~ URL
-where the registration ceremony will result in a new ~credential~
-being created for the user with their public_key and other data.  The
-final step is a call to ~sign_in(user)~ to store the new session that
-has been created along the way.
-
-A registered user will be directed to the ~session/new~ URL which
-retrieves the users public key from their associated ~credentials~ and
-performs the log in ceremony  and calls ~sign_in(user)~ assuming all
-goes well.
-
-~home/index~ is the root page for the application.  ~HomeController~
-is a subclass of ~AuthenticatedController~ which has a ~before_action~
-of ~enforce_current_user~.  Any unauthenticated user is redirected
-to ~session/new~.  The ~session/new~ page has a link to
-~registration/new~ for unregistered users.
+Started the project.
 
 * Added models and sessions controller
 :LOGBOOK:
@@ -140,3 +105,23 @@ e.g. ~new_registration_controller~, converted to Base64URL from the
 JSON, and then converted back to binary by the webauthn-json library.
 As I said, I think that is how it goes but I haven't fully traced the
 full path yet.
+
+* Slow progress
+:LOGBOOK:
+CLOCK: [2022-11-22 Tue 08:00]--[2022-11-22 Tue 16:00] =>  8:00
+CLOCK: [2022-11-23 Wed 08:00]--[2022-11-23 Wed 16:00] =>  8:00
+CLOCK: [2022-11-24 Thu 08:00]--[2022-11-24 Thu 16:00] =>  8:00
+:END:
+I think the errors mentioned above are not valid.  It turns out the
+~webauthn-ruby~ gem looks for the ~exclude~ and I'm assuming the
+~allow~ attributes and creates the appropriate list with the
+appropriate types.  See ~exclude~ list item in [[file:README.org::*Changes][Changes]].
+
+I've been listening to CSS videos and slowly working on the
+~RegistrationController~ and the ~new-registration~ Stimulus
+controller along with a ~_feature_detection~ partial which is being
+used as a layout -- not sure if that is the right way to do things but
+I think it is.
+
+I finally have something worth checking in but it isn't done I'm
+sure.

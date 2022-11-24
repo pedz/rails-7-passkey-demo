@@ -30,16 +30,18 @@
 # available at https://guides.rubyonrails.org/i18n.html.
 
 en:
-  registrations:
-    new:
-      heading: "Please register"
-      nickname: "Nickname"
-      username: "User name"
   helpers:
+    label:
+      registration:
+        username: "User name"
+
     submit:
       registration:
         submit: "Register via Passkeys"
-    label:
-      registration:
-        nickname: "Nickname"
-        username: "User name"
+
+  shared:
+    feature_detection:
+      heading: "Please register"
+      username: "User name"
+      did_not_work: "Feature Detection did not work!"
+      
