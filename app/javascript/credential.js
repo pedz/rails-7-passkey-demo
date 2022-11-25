@@ -10,6 +10,13 @@ function getCSRFToken() {
   }
 }
 
+function displayError(message) {
+  const ele = document.querySelector('#message-box');
+  const event = new CustomEvent('msg', { detail: { message: message}});
+  ele.dispatchEvent(event);
+  console.log("event sent");
+}
+
 function callback(url, body) {
   console.log("in callback", url);
   fetch(url, {
@@ -25,7 +32,9 @@ function callback(url, body) {
     if (response.ok) {
       window.location.replace("/")
     } else if (response.status < 500) {
-      response.text().then(showMessage);
+      // response.text().then(showMessage);
+      console.log("response not ok");
+      response.text().then((text) => { displayError(text) });
     } else {
       showMessage("Sorry, something wrong happened.");
     }

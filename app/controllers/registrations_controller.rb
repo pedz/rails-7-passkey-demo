@@ -15,7 +15,7 @@ class RegistrationsController < ApplicationController
         name: params[:registration][:username],
         id: user.webauthn_id
       },
-      authenticator_selection: { user_verification: "required" },
+      authenticator_selection: { user_verification: 'required' },
       exclude: user.credentials.pluck(:external_id)
     )
 
@@ -39,11 +39,53 @@ class RegistrationsController < ApplicationController
 
   # POST   /registration/callback(.:format)
   def callback
+    webauthn_credential = WebAuthn::Credential.from_create(params)
+
+    logger.debug { "session['current_registration']['user_attributes'] = #{session['current_registration']['user_attributes']}" }
+
+    unless (user = User.find_by(username: session_username))
+      user = User.create!(session_user_attribuets)
+    end
+
+    begin
+      webauthn_credential.verify(session['current_registration']['challenge'], user_verification: true)
+      logger.debug { 'verify worked' }
+
+      credential = user.credentials.build(
+        external_id: external_id(webauthn_credential),
+        public_key: webauthn_credential.public_key,
+        sign_count: webauthn_credential.sign_count
+      )
+
+      if credential.save
+        logger.debug { 'save worked' }
+        sign_in(user)
+
+        render json: { status: 'ok' }, status: :ok
+      else
+        logger.debug { 'save failed' }
+        render json: "Couldn't register your Security Key", status: :unprocessable_entity
+      end
+    rescue WebAuthn::Error => e
+      logger.debug { "verify raised error: #{e}" }
+      render json: "Verification failed: #{e.message}", status: :unprocessable_entity
+    ensure
+      logger.debug { 'delete session' }
+      session.delete('current_registration')
+    end
   end
 
   private
 
   def user_args
     { username: params[:registration][:username] }
+  end
+
+  def session_user_attribuets
+    session['current_registration']['user_attributes']
+  end
+
+  def session_username
+    session_user_attribuets['username']
   end
 end

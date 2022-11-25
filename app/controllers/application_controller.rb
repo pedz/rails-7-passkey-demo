@@ -14,4 +14,8 @@ class ApplicationController < ActionController::Base
   def current_user
     @current_user ||= (User.find_by(id: session[:user_id]) if session[:user_id])
   end
+
+  def external_id(webauthn_credential)
+    Base64.strict_encode64(webauthn_credential.raw_id)
+  end
 end

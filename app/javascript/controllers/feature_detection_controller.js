@@ -20,4 +20,11 @@ export default class extends Controller {
       })
     }
   }
+
+  msg(event) {
+    console.log("in feature-detection#msg", event);
+    this.messageTarget.innerHTML = event.detail.message;
+    this.messageAreaTarget.classList.remove("hidden");
+    this.formAreaTarget.classList.add("hidden");
+  }
 }
