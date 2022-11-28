@@ -1,3 +1,5 @@
 <div>
-  <h1 class="font-bold text-4xl"><span>Home</span> <span>Sweet</span> <span>Home</span></h1>
+  <h1 class="font-bold text-4xl mb-4"><span>Home</span> <span>Sweet</span> <span>Home</span></h1>
+  <!-- <%= session_path %> -->
+  <%= button_to "Log Out", session_path, method: :delete, form_class: 'flex justify-center', class: 'rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2' %>
 </div>

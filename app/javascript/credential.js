@@ -1,5 +1,4 @@
 import * as WebAuthnJSON from "@github/webauthn-json/browser-ponyfill"
-// import { showMessage } from "messenger";
 
 function getCSRFToken() {
   var CSRFSelector = document.querySelector('meta[name="csrf-token"]')
@@ -14,12 +13,12 @@ function displayError(message) {
   const ele = document.querySelector('#message-box');
   const event = new CustomEvent('msg', { detail: { message: message}});
   ele.dispatchEvent(event);
-  console.log("event sent");
+  console.log("credential: event sent");
 }
 
-function callback(url, body) {
-  console.log("in callback", url);
-  fetch(url, {
+function callback(original_url, callback_url, body) {
+  console.log("credential: in callback", original_url, callback_url, body);
+  fetch(encodeURI(callback_url), {
     method: "POST",
     body: JSON.stringify(body),
     headers: {
@@ -30,38 +29,38 @@ function callback(url, body) {
     credentials: 'same-origin'
   }).then(function(response) {
     if (response.ok) {
-      window.location.replace("/")
+      window.location.replace(encodeURI(original_url))
     } else if (response.status < 500) {
-      // response.text().then(showMessage);
-      console.log("response not ok");
+      console.log("credential: response not ok");
       response.text().then((text) => { displayError(text) });
     } else {
-      showMessage("Sorry, something wrong happened.");
+      console.log(response);
     }
   });
 }
 
-function create(callbackUrl, credentialOptions) {
-  console.log("create", callbackUrl);
-  const options = WebAuthnJSON.parseCreationOptionsFromJSON({ "publicKey": credentialOptions })
-  console.log("options");
-  WebAuthnJSON.create(options).then((response) => {
-    callback(callbackUrl, response);
+function create(data) {
+  const { original_url, callback_url, create_options } = data
+  const options = WebAuthnJSON.parseCreationOptionsFromJSON({ "publicKey": create_options })
+  WebAuthnJSON.create(options).then((credentials) => {
+    callback(original_url, callback_url, credentials);
   }).catch(function(error) {
-    console.log("create error", error);
+    console.log("credential: create error", error);
   });
 
-  console.log("Creating new public key credential...");
+  console.log("credential: Creating new public key credential...");
 }
 
-function get(credentialOptions) {
-  WebAuthnJSON.get({ "publicKey": credentialOptions }).then(function(credential) {
-    callback("/session/callback", credential);
+function get(data) {
+  const { original_url, callback_url, get_options } = data
+  const options = WebAuthnJSON.parseRequestOptionsFromJSON({ "publicKey": get_options })
+  WebAuthnJSON.get(options).then((credentials) => {
+    callback(original_url, callback_url, credentials);
   }).catch(function(error) {
-    showMessage(error);
+    console.log("credential: get error", error);
   });
 
-  console.log("Getting public key credential...");
+  console.log("credential: Getting public key credential...");
 }
 
-export { create, get }
+export { create, get, displayError }

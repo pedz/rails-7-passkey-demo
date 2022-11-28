@@ -8,21 +8,21 @@ class RegistrationsController < ApplicationController
     # A new User is not saved until the callback.  Its webauthn_id is
     # generated in the model.  session is used to preserve the values
     # across requests.
-    user = User.find_by(user_args) || User.new(user_args)
+    user = User.new(username: username_param)
 
     create_options = WebAuthn::Credential.options_for_create(
       user: {
-        name: params[:registration][:username],
+        name: username_param,
         id: user.webauthn_id
       },
       authenticator_selection: { user_verification: 'required' },
-      exclude: user.credentials.pluck(:external_id)
     )
 
     if user.valid?
-      session[:current_registration] = { challenge: create_options.challenge, user_attributes: user.attributes }
+      save_registration('challenge' => create_options.challenge, 'user_attributes' => user.attributes)
 
       hash = {
+        original_url: session['original_uri'],
         callback_url: callback_registration_path(format: :json),
         create_options: create_options
       }
@@ -41,14 +41,11 @@ class RegistrationsController < ApplicationController
   def callback
     webauthn_credential = WebAuthn::Credential.from_create(params)
 
-    logger.debug { "session['current_registration']['user_attributes'] = #{session['current_registration']['user_attributes']}" }
-
-    unless (user = User.find_by(username: session_username))
-      user = User.create!(session_user_attribuets)
-    end
+    user = User.create!(saved_user_attribuets)
+    logger.debug { 'create worked' }
 
     begin
-      webauthn_credential.verify(session['current_registration']['challenge'], user_verification: true)
+      webauthn_credential.verify(saved_challenge, user_verification: true)
       logger.debug { 'verify worked' }
 
       credential = user.credentials.build(
@@ -64,28 +61,47 @@ class RegistrationsController < ApplicationController
         render json: { status: 'ok' }, status: :ok
       else
         logger.debug { 'save failed' }
-        render json: "Couldn't register your Security Key", status: :unprocessable_entity
+        render json: 'Could not register your Security Key', status: :unprocessable_entity
       end
     rescue WebAuthn::Error => e
       logger.debug { "verify raised error: #{e}" }
       render json: "Verification failed: #{e.message}", status: :unprocessable_entity
+    rescue Exception => e
+      logger.debug { "Unexpected exception: #{e}" }
+      render json: "Verification failed: #{e.message}", status: :unprocessable_entity
     ensure
       logger.debug { 'delete session' }
-      session.delete('current_registration')
+      session.delete(:current_registration)
     end
   end
 
   private
 
-  def user_args
-    { username: params[:registration][:username] }
+  def username_param
+    registration_params[:username]
+  end
+  
+  def registration_params
+    params.require(:registration).permit(:username)
   end
 
-  def session_user_attribuets
-    session['current_registration']['user_attributes']
+  def saved_registration
+    session['current_registration']
   end
 
-  def session_username
-    session_user_attribuets['username']
+  def save_registration(v)
+    session['current_registration'] = v
+  end
+  
+  def saved_user_attribuets
+    saved_registration['user_attributes']
+  end
+
+  def saved_username
+    saved_user_attribuets['username']
+  end
+
+  def saved_challenge
+    saved_registration['challenge']
   end
 end

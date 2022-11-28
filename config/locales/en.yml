@@ -34,14 +34,18 @@ en:
     label:
       registration:
         username: "User name"
+      session:
+        username: "User name"
 
     submit:
       registration:
         submit: "Register via Passkeys"
+      session:
+        submit: "Sign in via Passkeys"
 
   shared:
     feature_detection:
-      heading: "Please register"
-      username: "User name"
       did_not_work: "Feature Detection did not work!"
-      
+      heading: "Please register"
+      sign_in: "Sign in to your account"
+      username: "User name"
