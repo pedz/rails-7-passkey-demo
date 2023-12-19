@@ -133,3 +133,8 @@ CLOCK: [2022-11-27 Sun 08:00]--[2022-11-27 Sun 16:00] =>  8:00
 :END:
 All the paths are working.  I now need to figure out an effective way
 to test this.
+
+* Small tidying up
+
+While merging this project with my Hatred project, I added many of the
+things that Rubocop had flagged with the Hatred project (but not all).

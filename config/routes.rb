@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # == Route Map
 #
 #                Prefix Verb   URI Pattern                      Controller#Action
